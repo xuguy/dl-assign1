@@ -1,0 +1,15 @@
+{
+  "id": "xgy2718/deep-learning-assign-v",
+  "title": "Deep learning assign v",
+  "code_file": "./main.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": "true",
+  "enable_gpu": "true",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": ["xgy2718/cifar-10-dlhw1-2", "xgy2718/mymodels"],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

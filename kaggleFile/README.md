@@ -14,3 +14,4 @@
 - 若模型文件有改动：`kaggle datasets version -p ./code --dir-mode zip -m "datasets v1"`
 - 若main.py有改动：kaggle kernels push -p .
 - 改动后便捷上传测试：`kaggle datasets version -p ./code --dir-mode zip -m "no comment";  kaggle kernels push -p . `
+  - kaggle datasets version -p ./code --dir-mode zip -m "no comment";  kaggle kernels push -p . 

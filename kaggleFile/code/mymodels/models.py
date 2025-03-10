@@ -339,6 +339,7 @@ class Bottleneck(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1, downsample=None):
         super().__init__()
         # 1x1 卷积降维
+        # 注意，第一层的stride采用默认值，也就是stride = 1
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=1, bias=False)
         self.bn1 = nn.BatchNorm2d(out_channels)
         
@@ -418,9 +419,22 @@ class ResNet(nn.Module):
             )
 
         layers = []
+        # first block needs to be processed specifically
+        '''
+        第一个 Block 的特殊性
+
+        负责处理维度变化（通道数或空间尺寸），通过 downsample 调整残差分支。
+
+        示例：layer2 的第一个 Bottleneck 中：
+
+        主分支：conv2 的 stride=2，空间尺寸减半。
+
+        残差分支：downsample 的 stride=2，同时调整通道数。
+        '''
         layers.append(block(self.in_channels, base_channels, stride, downsample))
         self.in_channels = base_channels * block.expansion
         for _ in range(1, blocks):
+            # 后续的block中没有stride参数
             layers.append(block(self.in_channels, base_channels))
 
         return nn.Sequential(*layers)
@@ -544,3 +558,19 @@ class VGG16(nn.Module):
 
 VGG16_MNIST = VGG16(in_channels=1)
 VGG16_cifar10 = VGG16(in_channels=3)
+
+
+
+# ============ baseline model ===============
+C5L4_base_cifar10 = nn.Sequential(
+    nn.Conv2d(3, 128, 3, padding=1), nn.ReLU(inplace=True), nn.MaxPool2d(2), nn.Dropout(0.3),
+    nn.Conv2d(128, 256, 3, padding=1), nn.ReLU(inplace=True), nn.MaxPool2d(2), nn.Dropout(0.3),
+    nn.Conv2d(256, 512, 3, padding=1), nn.ReLU(inplace=True),
+    nn.Conv2d(512, 512, 3, padding=1), nn.ReLU(inplace=True),
+    nn.Conv2d(512, 256, 3, padding=1), nn.ReLU(inplace=True), nn.MaxPool2d(2), nn.Dropout(0.3),
+    nn.Flatten(),
+    nn.Linear(256 * 4 * 4, 512), nn.ReLU(inplace=True), nn.Dropout(0.5),
+    nn.Linear(512, 256), nn.ReLU(inplace=True), nn.Dropout(0.5),
+    nn.Linear(256, 128), nn.ReLU(inplace=True), nn.Dropout(0.5),
+    nn.Linear(128, 10),
+)

@@ -1,0 +1,6 @@
+现已完成的实验：
+基准卷积神经网络（C3L3）结构：3个conv层，每个conv层后均加了dropout（0.3）层，3个linear层，每个linear层后面均加了dropout（0.5），使用Adam优化器，学习率3e-4，weightdecay 1e-6，在cifar-10数据集上训练，数据集的train set的尺寸为（60000，3，32，32），测试集的尺寸为（10000，3，32，32），在训练集上训练这个基准神经网络150个epoch，每个batch的batchsize为64，并在测试集上检测神经网络的accuracy。
+
+除了基准神经网络以外，我还尝试使用了数据增强（data augmentation，包括随机翻转、随机改变亮度以及饱和度等），使用SGD优化器（学习率1e-3），并尝试删除了conv层后面的dropout层（但保留了Linear层的dropout）、在conv层后加入batchnorm层等不同的修改，实验结果汇总成表格如图所示。
+
+请你用英文总结实验结果，并得出结论。

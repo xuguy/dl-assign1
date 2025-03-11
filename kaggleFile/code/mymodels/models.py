@@ -619,3 +619,47 @@ C5L4_BEST_cifar10 = nn.Sequential(
     
     nn.Linear(128, 10),
 )
+
+# best, removing all dropout layer
+C5L4_BEST_cifar10_nodrp = nn.Sequential(
+    nn.Conv2d(3, 128, 3, padding=1),
+    nn.BatchNorm2d(128),  # Batch Normalization after the first convolution
+    nn.ReLU(inplace=True),
+    nn.MaxPool2d(2),
+    # nn.Dropout(0.3),
+    
+    nn.Conv2d(128, 256, 3, padding=1),
+    nn.BatchNorm2d(256),  # Batch Normalization after the second convolution
+    nn.ReLU(inplace=True),
+    nn.MaxPool2d(2),
+    # nn.Dropout(0.3),
+    
+    nn.Conv2d(256, 512, 3, padding=1),
+    nn.BatchNorm2d(512),  # Batch Normalization after the third convolution
+    nn.ReLU(inplace=True),
+    
+    nn.Conv2d(512, 512, 3, padding=1),
+    nn.BatchNorm2d(512),  # Batch Normalization after the fourth convolution
+    nn.ReLU(inplace=True),
+    
+    nn.Conv2d(512, 256, 3, padding=1),
+    nn.BatchNorm2d(256),  # Batch Normalization after the fifth convolution
+    nn.ReLU(inplace=True),
+    nn.MaxPool2d(2),
+    # nn.Dropout(0.3),
+    
+    nn.Flatten(),
+    nn.Linear(256 * 4 * 4, 512),
+    nn.ReLU(inplace=True),
+    nn.Dropout(0.3),
+    
+    nn.Linear(512, 256),
+    nn.ReLU(inplace=True),
+    nn.Dropout(0.3),
+    
+    nn.Linear(256, 128),
+    nn.ReLU(inplace=True),
+    nn.Dropout(0.3),
+    
+    nn.Linear(128, 10),
+)

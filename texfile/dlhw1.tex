@@ -99,18 +99,30 @@
 
 \secs{A. Build a Neural Network Using PyTorch}
 \subs{1. reproducing example NeuralNetwork of example code A.}
-\textcolor{blue}{check notebook}
+\textcolor{blue}{Results are summaried in subsection 2.2 together with other settings, codes check notebook}
 
 \subs{2. Factors to improve accuracy}
-In my experiment, I tried to use 1) Simple NN (which is the baseline model of example code A) and NN with more complex architecture (vgg16 and ResNet18/50); 2) adding BatchNorm layer and dropout layer; 3) different optimziers SGD and Adam with popular \textit{lr} or momentum params settings; 4) with/without data augmentation. \\
+In my experiment, I tried to use 1) Simple NN structure(which is the baseline model of example code A) and NN with more complex architecture (vgg16 and ResNet18/50); 2) adding BatchNorm layer and dropout layer; 3) different optimziers SGD and Adam with popular \textit{lr} or momentum params settings; 4) with/without data augmentation. \\
 
 We mainly use the model of example code-A as our baseline model to examine how the above factors might affect accuracy. And due to computing resource limitation, i did not conduct strict experiment with strict variable controls. To gain insight is what we want.\\
 
 
-\noindent\textbf{- BaseLine Model }: C3L3 (3 Conv layers + 3 Linear layers) on CIFAR-10 dataset\\
-We first start with baseline model in example-code A, the steps of experiment are: 1)compare optimziers with all other settings the same, then pick the best optimziers (in terms of accuracy) for next step; 2) use the best optimizer and data augmentation to see if data augmentation could bring up accuracy in test set; 3) use best optimizer + data augmentation(note that data augmentation might not be useful, shall be given up if so) + \textcolor{red}{BatchNorm Layer} + \textcolor{red}{throw away dropout layer in convolution layer} to see whether we can have better accuracy on test set. 
+% \noindent\textbf{- BaseLine Model }: C3L3 (3 Conv layers + 3 Linear layers) on CIFAR-10 dataset\\
+% We first start with baseline model in example-code A, the steps of experiment are: 1)compare optimziers with all other settings the same, then pick the best optimziers (in terms of accuracy) for next step; 2) use the best optimizer and data augmentation to see if data augmentation could bring up accuracy in test set; 3) use best optimizer + data augmentation(note that data augmentation might not be useful, shall be given up if so) + \textcolor{red}{BatchNorm Layer} + \textcolor{red}{throw away dropout layer in convolution layer} to see whether we can have better accuracy on test set. 
+
+\noindent\textbf{Experiments Setup}\\
+
+\noindent \textbf{2.1 Baseline Convolutional Neural Network (C5L3) }
+\begin{itemize}
+  \item   architecture:  5 conv layers, each followed by a dropout layer (rate=0.3); 3 linear layers, each followed by a dropout layer (rate=0.5).
+  \item   optimizer: Adam with a learning rate of 3e-4 and weight decay of 1e-6.
+  \item   dataset: Trained on the CIFAR-10 dataset. The training set has dimensions (60,000, 3, 32, 32), and the test set has dimensions (10,000, 3, 32, 32).
+  \item   Training settings: Trained for 150 epochs with a batch size of 64. Model accuracy was evaluated on the test set.
+\end{itemize}  
+
 \begin{verbatim}
-  # our network architecture:  
+  
+# network(C5L3) architecture:  
   net = nn.Sequential(
       nn.Conv2d(3, 128, 3, padding=1), nn.ReLU(inplace=True), nn.MaxPool2d(2), nn.Dropout(0.3),
       nn.Conv2d(128, 256, 3, padding=1), nn.ReLU(inplace=True), nn.MaxPool2d(2), nn.Dropout(0.3),
@@ -118,14 +130,15 @@ We first start with baseline model in example-code A, the steps of experiment ar
       nn.Conv2d(512, 512, 3, padding=1), nn.ReLU(inplace=True),
       nn.Conv2d(512, 256, 3, padding=1), nn.ReLU(inplace=True), nn.MaxPool2d(2), nn.Dropout(0.3),
       nn.Flatten(),
+
       nn.Linear(256 * 4 * 4, 512), nn.ReLU(inplace=True), nn.Dropout(0.5),
       nn.Linear(512, 256), nn.ReLU(inplace=True), nn.Dropout(0.5),
       nn.Linear(256, 128), nn.ReLU(inplace=True), nn.Dropout(0.5),
       nn.Linear(128, 10),
   )
-  # Params count: 3*128*3*3+128*256*3*3+256*512*3*2*3+512**2*3*3+256*16*512+512*256+256*128+1280=7.28M
+# Params count: 3*128*3*3+128*256*3*3+256*512*3*2*3+512**2*3*3+256*16*512+512*256+256*128+1280=7.28M
 
-  # Using default data transformation in example code-A
+# Using default data transformation in example code-A
   transformation = dict()
   for data_type in ("train", "test"):
     is_train = data_type=="train"
@@ -139,29 +152,38 @@ We first start with baseline model in example-code A, the steps of experiment ar
         tv_transforms.ToTensor(),
         tv_transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
     ])
-
   \end{verbatim}
-This model is exactly the same model in example code A, we then try to reproduce the accuracy and comapre accuracy with different settings:
+
+\noindent\textbf{2.2 Additional Modifications Beyond the Baseline(C5L3):}
+\begin{itemize}
+  \item Extra Data Augmentation: Aside from default techniques in baselline model including random flipping, random rotation, random affine transformation, we add random brightness adjustments, and saturation modifications.
+  \item Optimizer Variant: Replaced Adam with SGD (learning rate=1e-3).
+  \item Architectural Varaint: Removed dropout layers after convolutional layers (retained dropout for linear layers), or adding BatchNorm layers after convolutional layers.
+\end{itemize}
+
+
+% ========= describe exp setting =========
+\noindent Results are summarized in the folloing table
 \begin{center}
   % 有可能多了一列, 另外用标红的一列表示baseline
   \begin{tabular}{|c|ccccc|c|} 
       \hline
-      Model & & C3L3 & & & &   \\
+      Model & & C5L3 & & & &   \\
       \hline
-      Adam &  \textcolor{red}{ $\surd$ }   &  &  & &  &\\ 
+      Adam &  \textcolor{red}{ $\surd$ }   &  & $\surd$ & $\surd$ &conv  &\\ 
       SGD & & $\surd$   & & &  &\\
 
-      Data Aug& &  &  &  &  &\\
+      ExtraDataAug& &  & $\surd$ &  $\surd$ &  &\\
 
-      dropout(conv) &\textcolor{red}{ $\surd$ } & $\surd$   & & &  & \\ 
+      dropout &\textcolor{red}{all} & all   & linear& none & linear  & \\ 
 
-      BatchNorm & & & &  &  & \\ 
+      BatchNorm & & &conv &conv  & conv & \\ 
       \hline
-      Accuracy & \textcolor{red}{85.26} &84.93 & & & & \\
+      Accuracy & \textcolor{red}{85.26} &84.93 &89.78 & 89.52& 88.54 & \\
       \hline
   \end{tabular} 
 \end{center}
-\textcolor{red}{\# Note:} bacthsize = 32, Epoch num = 150, dropout(conv) indicate whether we use dropout layer in convlution layer.
+\textcolor{red}{\# Note:} bacthsize = 64, Epoch num = 150, dropout(conv) indicate whether we use dropout layer in convlution layer.
 
 \noindent - Conclusion: 
 \begin{itemize}
@@ -183,7 +205,8 @@ We use simple CNN together with our best params on MNIST dataset. Check notebook
 
 \subs{Interesting findings and reflections}
 1) visualize data after data augmentation
-2) we have i learnt.
+2) what have i learnt.
+3) \textcolor{blue}{due to curiosity，可以用batchsize 32以及256 epoch对best model进行验证，看看accu能否上90}
 
 
 \secs{B. Build a Neural Network From Scratch}

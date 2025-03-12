@@ -4,3 +4,28 @@
 除了基准神经网络以外，我还尝试使用了数据增强（data augmentation，包括随机翻转、随机改变亮度以及饱和度等），使用SGD优化器（学习率1e-3），并尝试删除了conv层后面的dropout层（但保留了Linear层的dropout）、在conv层后加入batchnorm层等不同的修改，实验结果汇总成表格如图所示。
 
 请你用英文总结实验结果，并得出结论。
+
+
+在尝试从来零开始搭建一个deeplearning框架时，我参考了很多材料，其中包括Example-Code-Part-B以及pytorch，但是pytorch是一个相当庞大的框架，他集成了相当多的且经过大量优化的模块，大部分模块的实现思路已经在巨量的速度及兼容性优化下变得面目全非，这对于一个初学者来说，无疑是一个火箭工程，至少对于我来说，他不是一个好的参考材料。
+
+在Example-Code-Part-B中，反向传播的实现是通过手工求导，然后将导函数写成backward方法，在需要求导/梯度的时候嵌套.backward()方法实现反向传播，这不禁引起了我的担忧：面对更复杂的网络结构（例如ResNet的ResidualBlock），手工求导几乎是不可能的，难道说我辛辛苦苦"实现"了作业中要求的简单功能，却不可以用这些功能搭建更复杂的网络吗？
+
+这个担忧让我继续探索，从而发现了Chainer这个框架：其核心创新是动态计算图（Define-by-Run）。这一设计允许用户在模型前向传播过程中即时构建计算图，而非预先定义静态结构。Chainer 是首个提出动态计算图的框架，并启发了 PyTorch 的设计。然而Chainer高复杂度还是不适合新手学习，我进一步发现了 Building Deep Learning Frame这本书，此书介绍了名为DeZero的深度学习框架，这个框架是Chainer的简易版，他足够复杂且足够灵活，但又不至于太复杂，导致学习难度太高。这本书提供了完整的DeZero源码，但简单地抄写代码并不能给我带来什么收获。因为我开始这个项目的时间较早（作业一发布我就开始着手完成），所以我花了整整两周的时间一个字一个字地学完了DeZero的每一行代码，并且抛弃了作者原本对Conv2d的实现，转而从头开始独立实现该模块，除此之外，我还从头实现了作者并未提供的FocalLoss以及SELU模块，作为检验学习成果的测试。这一切都得益于自动微分和动态计算图的思路，使得我不必再费心手动求导，免受debug的痛苦，并为后续构造ResNet18/50等复杂的深度网络做好准备。
+
+
+dezero模块由一系列.py文件组成，你可以将dezero模块像一个正常的python package一样由import 导入。下面介绍模块的文件结构，以及作业要求实现的模块对应位置，对于一些值得拿出来讨论的实现方法，我会在这里简单讨论。再次强调，我并不是简单的把dezero模块拿过来交差了事，模块内的注释以及草稿可以佐证这一点，我花费了大量时间，最终并不是为了欺骗自己。
+
+
+a) Sigmoid: ../dezero-master/dezero/functions.py - line 457
+b) LeakyReLU: ../dezero-master/dezero/functions.py - line 457
+c) SELU (3 points)
+d) Linear, with config: in_features, out_features, bias (2 points)
+e) Conv2d, with config: in_channels, out_channels, kernel_size, stride, bias (12 points)
+f)
+Dropout, with config: p (3 points)
+g) BatchNorm2d, with config: num_features (10 points)
+h) FocalLoss, with config: alpha, gamma (8 points)
+i)
+SGD, with config: lr, momentum (2 points)
+j)
+Adam, with config: lr (4 points)

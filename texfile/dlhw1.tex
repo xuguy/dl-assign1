@@ -118,11 +118,11 @@ We mainly use the model of example code-A as our baseline model to examine how t
   \item   optimizer: Adam with a learning rate of 3e-4 and weight decay of 1e-6.
   \item   dataset: Trained on the CIFAR-10 dataset. The training set has dimensions (60,000, 3, 32, 32), and the test set has dimensions (10,000, 3, 32, 32).
   \item   Training settings: Trained for 150 epochs with a batch size of 64. Model accuracy was evaluated on the test set.
-\end{itemize}  
-
+\end{itemize}
+\vspace{5mm}
+\noindent \textbf{2.2 C5L3 architecture and data prep overview}
 \begin{verbatim}
-  
-# network(C5L3) architecture:  
+# baseline model(C5L3) architecture:  
   net = nn.Sequential(
       nn.Conv2d(3, 128, 3, padding=1), nn.ReLU(inplace=True), nn.MaxPool2d(2), nn.Dropout(0.3),
       nn.Conv2d(128, 256, 3, padding=1), nn.ReLU(inplace=True), nn.MaxPool2d(2), nn.Dropout(0.3),
@@ -144,15 +144,41 @@ We mainly use the model of example code-A as our baseline model to examine how t
     is_train = data_type=="train"
     transformation[data_type] = tv_transforms.Compose((
       [
+      # default data augmenation
         tv_transforms.RandomRotation(degrees=15),
         tv_transforms.RandomHorizontalFlip(),
         tv_transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
+      
+      # extra data augmentation:
+        tv_transforms.ColorJitter(
+          brightness=0.2, 
+          contrast=0.2,
+          saturation=0.2,
+          hue=0.1)
       ] if is_train else []) + 
     [
         tv_transforms.ToTensor(),
         tv_transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
     ])
   \end{verbatim}
+
+\noindent Example of data augmentation on CIFAR-10:
+
+% \begin{center}
+%   \includegraphics[width=0.45\textwidth]{fig/original.png} % 设定图片宽度为文本宽度的80%
+%   \includegraphics[width=0.45\textwidth]{fig/augmented.png} % 设定图片宽度为文本宽度的80%
+% \end{center}
+% \begin{center}
+%   \includegraphics[width=0.8\textwidth]{fig/augmented.png} % 设定图片宽度为文本宽度的80%
+% \end{center}
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.45\textwidth]{fig/original.png} % 设定图片宽度
+  \includegraphics[width=0.45\textwidth]{fig/augmented.png} % 设定图片宽度
+  \caption{original(left), augmented(right):random filp/rotate/affine/colorjit } % 图片标题
+  \label{fig:original} % 图片标签，方便引用
+\end{figure}
+
 
 \noindent\textbf{2.2 Additional Modifications Beyond the Baseline(C5L3):}
 \begin{itemize}
@@ -163,33 +189,37 @@ We mainly use the model of example code-A as our baseline model to examine how t
 
 
 % ========= describe exp setting =========
-\noindent Results are summarized in the folloing table
-\begin{center}
-  % 有可能多了一列, 另外用标红的一列表示baseline
-  \begin{tabular}{|c|ccccc|c|} 
-      \hline
-      Model & & C5L3 & & & &   \\
-      \hline
-      Adam &  \textcolor{red}{ $\surd$ }   &  & $\surd$ & $\surd$ &conv  &\\ 
-      SGD & & $\surd$   & & &  &\\
+\noindent Results on \textcolor{red}{CIFAR-10} are summarized in the folloing table
 
-      ExtraDataAug& &  & $\surd$ &  $\surd$ &  &\\
-
-      dropout &\textcolor{red}{all} & all   & linear& none & linear  & \\ 
-
-      BatchNorm & & &conv &conv  & conv & \\ 
-      \hline
-      Accuracy & \textcolor{red}{85.26} &84.93 &89.78 & 89.52& 88.54 & \\
-      \hline
+\begin{table}[htbp]
+  \centering
+  \caption{ModelSettings and Performance}
+  \label{tab:model-compare}
+  \begin{tabular}{|c|c|ccccc|} 
+    \hline
+    Model &\textcolor{red}{C5L3 base} &  &  & C5L3 variant & &   \\
+    \hline
+    Adam &  \textcolor{red}{ $\surd$ }   &  & $\surd$ & $\surd$ & $\surd$  & $\surd$\\ 
+    SGD & & $\surd$   & & &  &\\
+    ExtraDataAug& &  & $\surd$ &  $\surd$ &  &$\surd$\\
+    dropout &\textcolor{red}{all} & all   & linear& none & linear  & linear \\ 
+    BatchNorm & & & conv & conv  & conv & conv \\ 
+    MaxEpoch & \textcolor{red}{150} & 150 & 150 & 150  & 150 & 256 \\
+    \hline
+    BestTestAccu & \textcolor{red}{85.26} &84.93 &89.78 & 89.52& 88.54 & * \\
+    \hline
   \end{tabular} 
-\end{center}
+\end{table}
+
+
 \textcolor{red}{\# Note:} bacthsize = 64, Epoch num = 150, dropout(conv) indicate whether we use dropout layer in convlution layer.
 
 \noindent - Conclusion: 
 \begin{itemize}
-  \item Data augmentation can greatly improve accuracy
-  \item choosing SGD or Adam will not significantly affect accuracy, they just converge to almost the same accuracy at different speeds (in terms of epochs).
-  \item BatchNorm
+  \item BatchNorm considerably improve accuracy (+4.5\%), compared with other techniques.
+  \item choosing SGD or Adam will not significantly affect accuracy, they just converge to almost the same accuracy at different speeds (in terms of epochs). \textcolor{blue}{attach figure of loss curve}
+  \item dropout layers have almost no effect to the performance of model, since we have tested 2 scenarios: 1) keep dropout layers only in Linear layer (popular method) 2) removing all dropout layers; and they do not differ much in terms of test accu.
+  \item \textcolor{blue}{do more epochs, states that convergence speed might matters}
 \end{itemize}
 
 % ============== use advanced model structure: vgg16/resnet18/resnet50 ================
@@ -208,8 +238,52 @@ We use simple CNN together with our best params on MNIST dataset. Check notebook
 2) what have i learnt.
 3) \textcolor{blue}{due to curiosity，可以用batchsize 32以及256 epoch对best model进行验证，看看accu能否上90}
 
-
+\newpage
 \secs{B. Build a Neural Network From Scratch}
+\subs{1. AutoGrad: To Learn from the better}
+When attempting to build a deep learning framework from scratch, I referenced numerous materials, including Example-Code-Part-B and PyTorch. However, PyTorch is an immensely large framework that integrates numerous heavily optimized modules. The implementation logic of most modules has become unrecognizable under massive speed and compatibility optimizations, which makes it akin to a "rocket science project" for a beginner. At least for me, it is not a good reference material.\\
+
+In Example-Code-Part-B, the implementation of backpropagation relies on MANUALLY deriving gradients and writing them into .backward() methods, which are then called in a nested way to perform backward propagation when gradients are needed. This raised concerns for me: For more complex network architectures (e.g., ResidualBlock in ResNet), manual gradient derivation would be nearly impossible. Does this mean that after painstakingly "implementing" the simple functionalities required for the assignment, I still cannot gain much insight into the model DL framework (especially AutoGrad and Computing Graph), or to use these components to build more sophisticated networks?\\
+
+This concern drove me to explore further, leading me to discover the Chainer framework. Its core innovation is automatic differentiation via the dynamic computational graph (Define-by-Run), which allows users to construct the computation graph on-the-fly during the forward propagation process then attain gradients automatically, rather than predefining a static structure. Chainer was the first framework to propose dynamic computational graphs and inspired PyTorch's design. However, Chainer's high complexity still made it unsuitable for a novice learner.\\
+
+I then discovered the book Building Deep Learning Frame, which introduces a framework called DeZero—a simplified version of Chainer. It is sufficiently complex and flexible, yet not overly daunting for learners. The book provides the complete source code for DeZero, but simply copying the code would not have benefited me. Since I started this project early (immediately after the assignment was released), I spent two full weeks studying every line of DeZero's code character by character. I abandoned the author’s original implementation of the Conv2d module and reimplemented it from scratch, and I independently implemented FocalLoss module, which were not provided by the author, as tests to verify my understanding. All of this was made possible by the concepts of automatic differentiation and dynamic computational graphs, freeing me from the agony of manual gradient derivation and debugging, and preparing me to build complex deep networks like ResNet18/50 in the future.
+
+\subs{2. File Structure of the framework}
+The DeZero module is composed of a series of \texttt{.py} files, which can be imported like a standard Python package using \texttt{import}. Below I will outline the module's file structures and map the assignment-required functionalities to their corresponding implementations position. For certain noteworthy implementation approaches, I will briefly discuss them here.
+
+I want to emphasize again: I did not simply copy and submit the DeZero module as-is. The annotations and drafts within the module serve as evidence of this—I invested significant time and effort, ultimately not to deceive myself, but to deeply understand and internalize the concepts.
+
+\begin{verbatim}
+  dezero-master: .
+  │  core.py --------# base class: Function and Variable(a torch.tensor like data structure)
+  │  core_copy_beforeCuPY.py --------# ignore 
+  │  core_simple.py --------# ignore
+  │  cuda.py
+  │  dataloaders.py
+  │  datasets.py
+  │  functions.py --------# Sigmoid/LeakyReLU/Dropout/FocalLoss/
+  │  functions_conv.py --------#conv modules: F.Conv2dV function
+  │  layers.py --------# Linear/Conv2dV/BatchNorm2d/
+  │  models.py --------# C5L3/vgg16/ResNet18/50
+  │  optimizers.py --------# SGD/Adam
+  │  utils.py
+  │  __init__.py
+\end{verbatim}
+\begin{itemize}
+  \item[a)] Sigmoid: ../dezero-master/dezero/functions.py - line 457
+  \item[b)] LeakyReLU: ../dezero-master/dezero/functions.py - line 509
+  \item[c)] SELU: not implemented yet
+  \item[d)] Linear: ../dezero-master/dezero/layers.py - line 118
+  \item[e)] Conv2dV: ../dezero-master/dezero/layers.py - line 221, the original conv2d method is complicated, i wrote a new one (named Conv2dV) with im2col in forward and col2im in backward, almost as fast as the original one.
+  \item[f)] Dropout: ../dezero-master/dezero/functions.py - line 691
+  \item[g)] BatchNorm2d: ../dezero-master/dezero/layers.py - line 311, automatically detect num\_features, so no need to add this config
+  \item[h)] SigmoidFocalLoss: ../dezero-master/dezero/functions.py - Line 570
+  \item[i)] SGD: ../dezero-master/dezero/optimizers.py - line 38, 2 ways of implementation, 1)manual: forward+backward, marginally faster 2)auto: simply define the forward caculation, and get gradients through auto grad, almost as fast as 1).
+  \item[j)] Adam: ../dezero-master/dezero/optimizers.py - line 84   
+\end{itemize}
+
+
 做完1的试验后获取best 参数，接着用dezero堆叠一个相同结构。
 
 

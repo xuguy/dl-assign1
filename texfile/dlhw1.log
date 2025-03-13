@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2024.10.9)  13 MAR 2025 02:38
+This is XeTeX, Version 3.141592653-2.6-0.999996 (TeX Live 2024) (preloaded format=xelatex 2024.10.9)  13 MAR 2025 12:06
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -1028,7 +1028,11 @@ Package: fancyhdr 2022/11/09 v4.1 Extensive control of page headers and footers
 \f@nch@O@erf=\skip94
 \f@nch@O@olf=\skip95
 \f@nch@O@orf=\skip96
-) (./dlhw1.aux)
+) (./dlhw1.aux
+
+LaTeX Warning: Label `tab:model-compare' multiply defined.
+
+)
 \openout1 = `dlhw1.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 88.
@@ -1178,24 +1182,24 @@ File: fig/original.png Graphic file (type bmp)
 <fig/original.png>
 File: fig/augmented.png Graphic file (type bmp)
 <fig/augmented.png>
-[2] [3]
-Underfull \hbox (badness 10000) in paragraph at lines 244--245
+[2] [3] [4]
+Underfull \hbox (badness 10000) in paragraph at lines 265--266
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 246--247
+Underfull \hbox (badness 10000) in paragraph at lines 267--268
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 248--249
+Underfull \hbox (badness 10000) in paragraph at lines 269--270
 
  []
 
 Missing character: There is no │ (U+2502) in font [lmmono10-regular]:!
+[5]
 Missing character: There is no │ (U+2502) in font [lmmono10-regular]:!
-[4]
 Missing character: There is no │ (U+2502) in font [lmmono10-regular]:!
 Missing character: There is no │ (U+2502) in font [lmmono10-regular]:!
 Missing character: There is no │ (U+2502) in font [lmmono10-regular]:!
@@ -1208,15 +1212,19 @@ Missing character: There is no │ (U+2502) in font [lmmono10-regular]:!
 Missing character: There is no │ (U+2502) in font [lmmono10-regular]:!
 Missing character: There is no │ (U+2502) in font [lmmono10-regular]:!
 
-Underfull \hbox (badness 10000) in paragraph at lines 292--293
+Underfull \hbox (badness 10000) in paragraph at lines 314--315
 
  []
 
-[5] [6] (./dlhw1.aux)
+[6] [7] (./dlhw1.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2022/08/05>
  ***********
+
+
+LaTeX Warning: There were multiply-defined labels.
+
 Package rerunfilecheck Info: File `dlhw1.out' has not changed.
 (rerunfilecheck)             Checksum: D41D8CD98F00B204E9800998ECF8427E;0.
  ) 
@@ -1229,4 +1237,4 @@ Here is how much of TeX's memory you used:
  1348 hyphenation exceptions out of 8191
  93i,11n,97p,1066b,1049s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on dlhw1.pdf (6 pages).
+Output written on dlhw1.pdf (7 pages).

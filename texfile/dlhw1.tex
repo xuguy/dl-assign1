@@ -223,14 +223,35 @@ We mainly use the model of example code-A as our baseline model to examine how t
 \end{itemize}
 
 % ============== use advanced model structure: vgg16/resnet18/resnet50 ================
+\subs{2.3 Deeper Neural Network}
+Although our basline model can achieve around 90\% accuracy on test set, deeper neural network can always (at a high prob) handle complicated features better, here, cifar-10 images have complex features. So we decided to try deeper networks \texttt{vgg16, ResNet18, ResNet50}.
+
+\texttt{vgg16} stacking 5 blocks of conv->batchnorm->relu->conv->batchnorm->relu->maxpool, hoping to extract more abstract representation of features.
+
+\texttt{ResNet18} stacking 4 basic ResidualBlocks, by doing so it allows gradient to propagate without exploding or disappearing.
+
+\texttt{ResNet50} stack 4 special ResidualBlock (named BottleNeck Block) and allows gradient to propagate in even deeper network.
+
+\begin{table}[htbp]
+  \centering
+  \caption{ModelSettings and Performance}
+  \label{tab:model-compare}
+  \begin{tabular}{|c|ccc|} 
+    \hline
+    Model & vgg16 & ResNet18 & ResNet50  \\
+    \hline
+    TestAcc & * & * & *  \\
+    \hline
+  \end{tabular} 
+\end{table}
 
 
 
 
 
 
-\subs{MNIST dataset}
-We use simple CNN together with our best params on MNIST dataset. Check notebook codes.
+\subs{2.4 MNIST dataset}
+We first use basline model together with our best params on MNIST dataset. Check notebook codes.
 
 
 \subs{Interesting findings and reflections}
@@ -250,7 +271,7 @@ This concern drove me to explore further, leading me to discover the Chainer fra
 I then discovered the book Building Deep Learning Frame, which introduces a framework called DeZero—a simplified version of Chainer. It is sufficiently complex and flexible, yet not overly daunting for learners. The book provides the complete source code for DeZero, but simply copying the code would not have benefited me. Since I started this project early (immediately after the assignment was released), I spent two full weeks studying every line of DeZero's code character by character. I abandoned the author’s original implementation of the Conv2d module and reimplemented it from scratch, and I independently implemented FocalLoss module, which were not provided by the author, as tests to verify my understanding. All of this was made possible by the concepts of automatic differentiation and dynamic computational graphs, freeing me from the agony of manual gradient derivation and debugging, and preparing me to build complex deep networks like ResNet18/50 in the future.
 
 \subs{2. File Structure of the framework}
-The DeZero module is composed of a series of \texttt{.py} files, which can be imported like a standard Python package using \texttt{import}. Below I will outline the module's file structures and map the assignment-required functionalities to their corresponding implementations position. For certain noteworthy implementation approaches, I will briefly discuss them here.
+\textbf{The core of my framework is Define-by-Run AutoGrad, it builds connections between variables for later back-propagation when doing calculation.} The DeZero module is composed of a series of \texttt{.py} files, which can be imported like a standard Python package using \texttt{import}. Below I will outline the module's file structures and map the assignment-required functionalities to their corresponding implementations position. For certain noteworthy implementation approaches, I will briefly discuss them here.
 
 I want to emphasize again: I did not simply copy and submit the DeZero module as-is. The annotations and drafts within the module serve as evidence of this—I invested significant time and effort, ultimately not to deceive myself, but to deeply understand and internalize the concepts.
 
@@ -270,6 +291,7 @@ I want to emphasize again: I did not simply copy and submit the DeZero module as
   │  utils.py
   │  __init__.py
 \end{verbatim}
+
 \begin{itemize}
   \item[a)] Sigmoid: ../dezero-master/dezero/functions.py - line 457
   \item[b)] LeakyReLU: ../dezero-master/dezero/functions.py - line 509

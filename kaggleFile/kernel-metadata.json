@@ -1,7 +1,7 @@
 {
-  "id": "uphillroad/dl-bsln-exp-aio",
-  "title": "dl bsln exp aio",
-  "code_file": "./main_revise.ipynb",
+  "id": "uphillroad/dl-res18",
+  "title": "dl res18",
+  "code_file": "./main_res18.ipynb",
   "language": "python",
   "kernel_type": "notebook",
   "is_private": "true",

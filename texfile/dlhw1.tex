@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage{hyperref}
+
 \usepackage[english]{babel}
 \usepackage{latexsym,bm,amsmath,amssymb,graphicx,ctex,tikz,systeme,array, soul,scalerel,wrapfig,lipsum}
 \newcommand*\circled[1]{\tikz[baseline=(char.base)]{
@@ -27,27 +28,34 @@
 \usepackage{xcolor}
 \usepackage[lighttt]{lmodern}
 \definecolor{codegreen}{rgb}{0,0.6,0}
-\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codegray}{rgb}{0.2,0.2,0.2}
 \definecolor{codepurple}{rgb}{0.58,0,0.82}
-\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\definecolor{keyblue}{rgb}{0,0,0.9}
+\definecolor{backcolour}{rgb}{0.98,0.98,0.98}
 \lstdefinestyle{mystyle}{
     backgroundcolor=\color{backcolour},   
-    commentstyle=\color{codegreen},
-    keywordstyle=\color{magenta},
+    commentstyle=\color{codepurple},
+    keywordstyle=\color{keyblue},
     numberstyle=\tiny\color{codegray},
     stringstyle=\color{codepurple},
-    basicstyle=\sffamily\large,
+    basicstyle=\ttfamily\small,
     breakatwhitespace=false,         
     breaklines=true,                 
-    captionpos=b,                    
+    captionpos=t,                    
     keepspaces=true,                 
     numbers=left,                    
-    numbersep=5pt,                  
+    numbersep=1pt,                  
     showspaces=false,                
     showstringspaces=false,
     showtabs=false,                  
-    tabsize=2
+    tabsize=1
 }
+% -- Setting up the custom style:
+\lstset{style=mystyle}
+% ======= code block =======
+
+
+% ==========================
 
 \lstset{style=mystyle}
 \newcommand{\subs}[1]{\subsection*{#1}}
@@ -121,9 +129,51 @@ We mainly use the model of example code-A as our baseline model to examine how t
 \end{itemize}
 \vspace{5mm}
 \noindent \textbf{2.2 C5L3 architecture and data prep overview}
-\begin{verbatim}
-# baseline model(C5L3) architecture:  
+% \begin{verbatim}
+% # baseline model(C5L3) architecture:  
+%   net = nn.Sequential(
+%       nn.Conv2d(3, 128, 3, padding=1), nn.ReLU(inplace=True), nn.MaxPool2d(2), nn.Dropout(0.3),
+%       nn.Conv2d(128, 256, 3, padding=1), nn.ReLU(inplace=True), nn.MaxPool2d(2), nn.Dropout(0.3),
+%       nn.Conv2d(256, 512, 3, padding=1), nn.ReLU(inplace=True),
+%       nn.Conv2d(512, 512, 3, padding=1), nn.ReLU(inplace=True),
+%       nn.Conv2d(512, 256, 3, padding=1), nn.ReLU(inplace=True), nn.MaxPool2d(2), nn.Dropout(0.3),
+%       nn.Flatten(),
+
+%       nn.Linear(256 * 4 * 4, 512), nn.ReLU(inplace=True), nn.Dropout(0.5),
+%       nn.Linear(512, 256), nn.ReLU(inplace=True), nn.Dropout(0.5),
+%       nn.Linear(256, 128), nn.ReLU(inplace=True), nn.Dropout(0.5),
+%       nn.Linear(128, 10),
+%   )
+% # Params count: 3*128*3*3+128*256*3*3+256*512*3*2*3+512**2*3*3+256*16*512+512*256+256*128+1280=7.28M
+
+% # Using default data transformation in example code-A
+%   transformation = dict()
+%   for data_type in ("train", "test"):
+%     is_train = data_type=="train"
+%     transformation[data_type] = tv_transforms.Compose((
+%       [
+%       # default data augmenation
+%         tv_transforms.RandomRotation(degrees=15),
+%         tv_transforms.RandomHorizontalFlip(),
+%         tv_transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
+      
+%       # extra data augmentation:
+%         tv_transforms.ColorJitter(
+%           brightness=0.2, 
+%           contrast=0.2,
+%           saturation=0.2,
+%           hue=0.1)
+%       ] if is_train else []) + 
+%     [
+%         tv_transforms.ToTensor(),
+%         tv_transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
+%     ])
+%   \end{verbatim}
+
+\begin{lstlisting}[language=python]
+  # baseline model(C5L3) architecture:  
   net = nn.Sequential(
+    # conv layer: 5
       nn.Conv2d(3, 128, 3, padding=1), nn.ReLU(inplace=True), nn.MaxPool2d(2), nn.Dropout(0.3),
       nn.Conv2d(128, 256, 3, padding=1), nn.ReLU(inplace=True), nn.MaxPool2d(2), nn.Dropout(0.3),
       nn.Conv2d(256, 512, 3, padding=1), nn.ReLU(inplace=True),
@@ -131,12 +181,13 @@ We mainly use the model of example code-A as our baseline model to examine how t
       nn.Conv2d(512, 256, 3, padding=1), nn.ReLU(inplace=True), nn.MaxPool2d(2), nn.Dropout(0.3),
       nn.Flatten(),
 
+    # linear layer: 3, excluding the last layer
       nn.Linear(256 * 4 * 4, 512), nn.ReLU(inplace=True), nn.Dropout(0.5),
       nn.Linear(512, 256), nn.ReLU(inplace=True), nn.Dropout(0.5),
       nn.Linear(256, 128), nn.ReLU(inplace=True), nn.Dropout(0.5),
       nn.Linear(128, 10),
   )
-# Params count: 3*128*3*3+128*256*3*3+256*512*3*2*3+512**2*3*3+256*16*512+512*256+256*128+1280=7.28M
+# ParamsCount: 3*128*3*3+128*256*3*3+256*512*3*2*3+512**2*3*3+256*16*512+512*256+256*128+1280=7.28M
 
 # Using default data transformation in example code-A
   transformation = dict()
@@ -160,7 +211,11 @@ We mainly use the model of example code-A as our baseline model to examine how t
         tv_transforms.ToTensor(),
         tv_transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
     ])
-  \end{verbatim}
+\end{lstlisting}
+
+
+
+
 
 \noindent Example of data augmentation on CIFAR-10:
 
@@ -179,8 +234,18 @@ We mainly use the model of example code-A as our baseline model to examine how t
   \label{fig:original} % 图片标签，方便引用
 \end{figure}
 
+\noindent\textbf{Training strategies}
+We have 6 (basline models with different settings on CIFAR-10) + 3 (advanced network on CIFAR-10) + 1 (best model on MNIST) = 10 models in total to train. We decided to run 10 separates .ipynb on kaggle, 1 for each model with it's corresponding settings, insteading of packing all in one file for the following reasons:
 
-\noindent\textbf{2.2 Additional Modifications Beyond the Baseline(C5L3):}
+\begin{itemize}
+  \item Parallel: kaggle allows running 2 notebook at the same time, save time.
+  \item Flexibility: we can adjust each model at any time.
+  \item Fault tolerance: If we run everything in 1 file, we will loose everything if 1 error pop up, wasting time quota of free gpu usage.
+\end{itemize}
+
+
+
+\noindent\textbf{2.2 Baseline model + additional modifications beyond the Baseline(C5L3):}
 \begin{itemize}
   \item Extra Data Augmentation: Aside from default techniques in baselline model including random flipping, random rotation, random affine transformation, we add random brightness adjustments, and saturation modifications.
   \item Optimizer Variant: Replaced Adam with SGD (learning rate=1e-3).
@@ -199,27 +264,37 @@ We mainly use the model of example code-A as our baseline model to examine how t
     \hline
     Model &\textcolor{red}{C5L3 base} &  &  & C5L3 variant & &   \\
     \hline
-    Adam &  \textcolor{red}{ $\surd$ }   &  & $\surd$ & $\surd$ & $\surd$  & $\surd$\\ 
-    SGD & & $\surd$   & & &  &\\
-    ExtraDataAug& &  & $\surd$ &  $\surd$ &  &$\surd$\\
-    dropout &\textcolor{red}{all} & all   & linear& none & linear  & linear \\ 
-    BatchNorm & & & conv & conv  & conv & conv \\ 
-    MaxEpoch & \textcolor{red}{150} & 150 & 150 & 150  & 150 & 256 \\
+    SettingNo. &1 &2  &\textcolor{blue}{3}  & 4 &5 &6   \\
     \hline
-    BestTestAccu & \textcolor{red}{85.26} &84.93 &89.78 & 89.52& 88.54 & * \\
+    Adam &  \textcolor{red}{ $\surd$ }   &  & \textcolor{blue}{$\surd$} & $\surd$ & $\surd$  & $\surd$\\ 
+    SGD & & $\surd$   & & &  &\\
+    ExtraDataAug& &  & \textcolor{blue}{$\surd$} &  $\surd$ &  &$\surd$\\
+    dropout &\textcolor{red}{all} & all   & \textcolor{blue}{linear}& none & linear  & linear \\ 
+    BatchNorm & & & \textcolor{blue}{conv} & conv  & conv & conv \\ 
+    MaxEpoch & \textcolor{red}{150} & 150 & \textcolor{blue}{150} & 150  & 150 & 256 \\
+    \hline
+    BestTestAccu & \textcolor{red}{85.11} &84.95 &\textcolor{blue}{89.31} & 89.69& 88.34 & 89.73 \\
     \hline
   \end{tabular} 
 \end{table}
 
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.45\textwidth]{fig/train_result_1.png} % 设定图片宽度
+  \includegraphics[width=0.45\textwidth]{fig/train_result_2.png} % 设定图片宽度
+  \caption{model settings 1(left) 2(right)} % 图片标题
+  \label{fig:curve} % 图片标签，方便引用
+\end{figure}
+
 
 \textcolor{red}{\# Note:} bacthsize = 64, Epoch num = 150, dropout(conv) indicate whether we use dropout layer in convlution layer.
 
-\noindent - Conclusion: 
+\noindent - Results Interpretation: 
 \begin{itemize}
   \item BatchNorm considerably improve accuracy (+4.5\%), compared with other techniques.
   \item choosing SGD or Adam will not significantly affect accuracy, they just converge to almost the same accuracy at different speeds (in terms of epochs). \textcolor{blue}{attach figure of loss curve}
   \item dropout layers have almost no effect to the performance of model, since we have tested 2 scenarios: 1) keep dropout layers only in Linear layer (popular method) 2) removing all dropout layers; and they do not differ much in terms of test accu.
-  \item \textcolor{blue}{do more epochs, states that convergence speed might matters}
+  \item Notice that the last column of the table, we re-do the 3rd settings for 256 epochs, and the test accuracy only improve for a margin. 
 \end{itemize}
 
 % ============== use advanced model structure: vgg16/resnet18/resnet50 ================
